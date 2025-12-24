@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Control Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        .login-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .login-box {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00d4ff;
+            padding: 40px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.4);
+        }
+
+        .login-title {
+            color: #00d4ff;
+            font-size: 28px;
+            margin-bottom: 30px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .login-input {
+            padding: 12px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid #00d4ff;
+            color: #00d4ff;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .login-input::placeholder {
+            color: rgba(0, 212, 255, 0.5);
+        }
+
+        .login-input:focus {
+            outline: none;
+            background: rgba(0, 212, 255, 0.2);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+        }
+
+        .login-btn {
+            padding: 12px;
+            background: #00d4ff;
+            color: #0a0a0a;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            background: #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+        }
+
+        .login-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .login-error {
+            color: #ff4444;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .login-error.show {
+            display: block;
+        }
+
+        .login-status {
+            color: #00ff00;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .login-status.show {
+            display: block;
+        }
+
+        /* Admin Panel */
+        .admin-panel {
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 20px;
+            overflow-y: auto;
+            display: none;
+            flex-direction: column;
+        }
+
+        .admin-panel.active {
+            display: flex;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #00d4ff;
+            padding-bottom: 15px;
+        }
+
+        .admin-title {
+            color: #00d4ff;
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .admin-stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-label {
+            color: #00aa00;
+        }
+
+        .stat-value {
+            color: #00ff00;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        .connection-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ff4444;
+            animation: pulse 2s infinite;
+        }
+
+        .connection-status.connected {
+            background: #00ff00;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .logout-btn {
+            padding: 10px 20px;
+            background: #ff4444;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #ff6666;
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+        }
+
+        .admin-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .admin-info {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 5px;
+            font-size: 12px;
+            color: #00aa00;
+        }
+
+        .outpost-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 15px;
+        }
+
+        .outpost-item {
+            padding: 15px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .outpost-item:hover {
+            border-color: #00d4ff;
+            background: rgba(0, 212, 255, 0.2);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+
+        .outpost-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #00d4ff;
+        }
+
+        .outpost-id {
+            font-size: 11px;
+            color: #00aa00;
+            margin-bottom: 8px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .outpost-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-team {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-team.classic {
+            background: #ffd700;
+            color: #000;
+        }
+
+        .btn-team.classic:hover {
+            background: #ffed4e;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+        }
+
+        .btn-team.classic.active {
+            box-shadow: 0 0 15px rgba(255, 215, 0, 1);
+            transform: scale(1.05);
+        }
+
+        .btn-team.cyberpunk {
+            background: #a020f0;
+            color: #fff;
+        }
+
+        .btn-team.cyberpunk:hover {
+            background: #c940ff;
+            box-shadow: 0 0 10px rgba(160, 32, 240, 0.6);
+        }
+
+        .btn-team.cyberpunk.active {
+            box-shadow: 0 0 15px rgba(192, 64, 255, 1);
+            transform: scale(1.05);
+        }
+
+        .outpost-status {
+            font-size: 11px;
+            color: #00aa00;
+            margin-top: 8px;
+            font-family: 'Courier New', monospace;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #00d4ff;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00ffff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <div class="login-title">⚙️ Доступ в админ панель</div>
+            <form class="login-form" id="loginForm">
+                <input type="password" class="login-input" id="passwordInput" placeholder="Enter password" autocomplete="off">
+                <button type="submit" class="login-btn" id="loginBtn">Войти</button>
+                <div class="login-error" id="loginError">❌ Неверный пароль</div>
+                <div class="login-status" id="loginStatus">⏳ Подключение...</div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div class="admin-panel" id="adminPanel">
+        <div class="admin-header">
+            <div class="admin-title">🔧 Панель управления</div>
+            <div class="admin-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Статус:</span>
+                    <div class="connection-status" id="connectionStatus"></div>
+                    <span class="stat-value" id="statusText">Подключение...</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Классики:</span>
+                    <span class="stat-value" id="classicCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Киберы:</span>
+                    <span class="stat-value" id="cyberpunkCount">0</span>
+                </div>
+            </div>
+            <button class="logout-btn" id="logoutBtn">Выйти</button>
+        </div>
+        <div class="admin-content">
+            <div class="admin-info" id="adminInfo">
+                ⏳ Загрузка аванпостов...
+            </div>
+            <div class="outpost-list" id="outpostList"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+        const WS_URL = 'ws://localhost:8000';
+
+        class OutpostAPI {
+            constructor() {
+                this.token = localStorage.getItem('outpost_token');
+                this.ws = null;
+                this.reconnectAttempts = 0;
+                this.maxReconnectAttempts = 5;
+                this.outposts = [];
+            }
+
+            async login(password) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ password })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Invalid password');
+                    }
+                    
+                    const data = await response.json();
+                    this.token = data.access_token;
+                    localStorage.setItem('outpost_token', this.token);
+                    return data;
+                } catch (error) {
+                    console.error('❌ Login error:', error);
+                    throw error;
+                }
+            }
+
+            logout() {
+                this.token = null;
+                localStorage.removeItem('outpost_token');
+            }
+
+            async getOutposts() {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/outposts`);
+                    if (!response.ok) throw new Error('Failed to load outposts');
+                    const data = await response.json();
+                    this.outposts = data;
+                    return data;
+                } catch (error) {
+                    console.error('❌ Error loading outposts:', error);
+                    throw error;
+                }
+            }
+
+            async updateOutpost(id, team) {
+                if (!this.token) {
+                    throw new Error('Authentication required');
+                }
+                
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/outposts/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${this.token}`
+                        },
+                        body: JSON.stringify({ team })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Update error: ${response.statusText}`);
+                    }
+                    
+                    return await response.json();
+                } catch (error) {
+                    console.error('❌ Update error:', error);
+                    throw error;
+                }
+            }
+
+            async getStats() {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/stats`);
+                    if (!response.ok) throw new Error('Failed to load stats');
+                    return await response.json();
+                } catch (error) {
+                    console.error('❌ Error loading stats:', error);
+                    throw error;
+                }
+            }
+
+            connectWebSocket(onMessage, onClose) {
+                return new Promise((resolve, reject) => {
+                    try {
+                        this.ws = new WebSocket(`${WS_URL}/ws/display`);
+                        
+                        this.ws.onopen = () => {
+                            console.log('✅ WebSocket connected');
+                            this.reconnectAttempts = 0;
+                            updateConnectionStatus(true);
+                            resolve();
+                        };
+                        
+                        this.ws.onmessage = (event) => {
+                            const data = JSON.parse(event.data);
+                            console.log('📨 Update received:', data);
+                            if (onMessage) onMessage(data);
+                        };
+                        
+                        this.ws.onerror = (error) => {
+                            console.error('❌ WebSocket error:', error);
+                            updateConnectionStatus(false);
+                            reject(error);
+                        };
+                        
+                        this.ws.onclose = () => {
+                            console.log('❌ WebSocket disconnected');
+                            updateConnectionStatus(false);
+                            if (onClose) onClose();
+                            this.attemptReconnect(onMessage, onClose);
+                        };
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+            }
+
+            attemptReconnect(onMessage, onClose) {
+                if (this.reconnectAttempts < this.maxReconnectAttempts) {
+                    this.reconnectAttempts++;
+                    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
+                    console.log(`🔄 Reconnecting in ${delay}ms...`);
+                    
+                    setTimeout(() => {
+                        this.connectWebSocket(onMessage, onClose)
+                            .catch(err => console.error('Reconnection error:', err));
+                    }, delay);
+                }
+            }
+
+            disconnectWebSocket() {
+                if (this.ws) {
+                    this.ws.close();
+                    this.ws = null;
+                }
+            }
+        }
+
+        const api = new OutpostAPI();
+        let allOutposts = [];
+
+        function showLoginError(message) {
+            const errorEl = document.getElementById('loginError');
+            const statusEl = document.getElementById('loginStatus');
+            errorEl.textContent = `❌ ${message}`;
+            errorEl.classList.add('show');
+            statusEl.classList.remove('show');
+            document.getElementById('loginBtn').disabled = false;
+        }
+
+        function showLoginStatus(message) {
+            const statusEl = document.getElementById('loginStatus');
+            const errorEl = document.getElementById('loginError');
+            statusEl.textContent = `⏳ ${message}`;
+            statusEl.classList.add('show');
+            errorEl.classList.remove('show');
+        }
+
+        function updateConnectionStatus(connected) {
+            const status = document.getElementById('connectionStatus');
+            const statusText = document.getElementById('statusText');
+            
+            if (connected) {
+                status.classList.add('connected');
+                statusText.textContent = 'Подключено';
+                statusText.style.color = '#00ff00';
+            } else {
+                status.classList.remove('connected');
+                statusText.textContent = 'Оффлайн';
+                statusText.style.color = '#ff4444';
+            }
+        }
+
+        function updateStats() {
+            const classicCount = allOutposts.filter(o => o.team === 'classic').length;
+            const cyberpunkCount = allOutposts.filter(o => o.team === 'cyberpunk').length;
+            
+            document.getElementById('classicCount').textContent = classicCount;
+            document.getElementById('cyberpunkCount').textContent = cyberpunkCount;
+        }
+
+        function renderAdminPanel() {
+            const list = document.getElementById('outpostList');
+            const info = document.getElementById('adminInfo');
+            list.innerHTML = '';
+
+            if (allOutposts.length === 0) {
+                info.innerHTML = '⏳ Аванпосты не загружены...';
+                return;
+            }
+
+            info.innerHTML = `✅ Подключено к серверу • ${allOutposts.length} аванпостов`;
+
+            allOutposts.forEach(outpost => {
+                const item = document.createElement('div');
+                item.className = 'outpost-item';
+                
+                const classicActive = outpost.team === 'classic' ? 'active' : '';
+                const cyberpunkActive = outpost.team === 'cyberpunk' ? 'active' : '';
+
+                item.innerHTML = `
+                    <div class="outpost-name">${outpost.name}</div>
+                    <div class="outpost-id">ID: ${outpost.id} • Команда: ${outpost.team.toUpperCase()}</div>
+                    <div class="outpost-controls">
+                        <button class="btn-team classic ${classicActive}" 
+                            onclick="changeTeam(${outpost.id}, 'classic')">🏛️ Классики</button>
+                        <button class="btn-team cyberpunk ${cyberpunkActive}" 
+                            onclick="changeTeam(${outpost.id}, 'cyberpunk')">⚡ Киберы</button>
+                    </div>
+                    <div class="outpost-status">Последняя синхронихация: только что</div>
+                `;
+                list.appendChild(item);
+            });
+
+            updateStats();
+        }
+
+        async function changeTeam(outpostId, team) {
+            try {
+                await api.updateOutpost(outpostId, team);
+                console.log('✅ Outpost updated');
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const password = document.getElementById('passwordInput').value;
+            const btn = document.getElementById('loginBtn');
+            
+            btn.disabled = true;
+            showLoginStatus('Аутентификация...');
+
+            try {
+                await api.login(password);
+                showLoginStatus('Загрузка аванпостов...');
+                
+                const outposts = await api.getOutposts();
+                allOutposts = outposts;
+                
+                showLoginStatus('Подключение к серверу...');
+                await api.connectWebSocket(
+                    (data) => {
+                        if (data.type === 'outpost_updated') {
+                            console.log('🎯 Outpost updated:', data.outpost);
+                            const index = allOutposts.findIndex(o => o.id === data.outpost.id);
+                            if (index !== -1) {
+                                allOutposts[index] = data.outpost;
+                            }
+                            renderAdminPanel();
+                        } else if (data.type === 'initial_state') {
+                            allOutposts = data.outposts;
+                            renderAdminPanel();
+                        }
+                    }
+                );
+
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('adminPanel').classList.add('active');
+                renderAdminPanel();
+            } catch (error) {
+                showLoginError(error.message || 'Ошибка подключения');
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            api.logout();
+            api.disconnectWebSocket();
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('adminPanel').classList.remove('active');
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('loginError').classList.remove('show');
+            document.getElementById('loginStatus').classList.remove('show');
+            updateConnectionStatus(false);
+        });
+
+        window.addEventListener('load', async function() {
+            document.getElementById('passwordInput').focus();
+            
+            if (api.token) {
+                document.getElementById('loginBtn').click();
+            }
+        });
+    </script>
+</body>
+</html>
