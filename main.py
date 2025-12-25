@@ -9,8 +9,8 @@ from typing import List, Dict
 from datetime import datetime
 from pathlib import Path
 
-from models import Outpost
-from schemas import OutpostUpdate, LoginRequest, TokenResponse
+from models import Outpost, Marriage
+from schemas import OutpostUpdate, LoginRequest, TokenResponse, MarriageCreate, MarriageResponse, MarriageDeleteResponse
 from auth import verify_password, create_access_token, verify_token
 from config import ADMIN_PASSWORD, SECRET_KEY
 
@@ -24,6 +24,8 @@ outposts_db: Dict[int, Outpost] = {
     7: Outpost(id=7, name='-{Клуб ярчайшей Н.}-', team='cyberpunk', is_primary=True),
     8: Outpost(id=8, name='-{Поместье господина М.}-', team='classic', is_primary=True),
 }
+marriages_db: Dict[int, Marriage] = {}
+next_marriage_id = 1
 
 
 class ConnectionManager:
@@ -321,19 +323,6 @@ async def batch_update_outposts(
 async def websocket_endpoint(websocket: WebSocket):
     """
     WebSocket эндпоинт для реал-тайм обновлений
-
-    Клиент получает уведомления при изменении состояния аванпостов:
-    ```json
-    {
-      "type": "outpost_updated",
-      "outpost": {
-        "id": 1,
-        "name": "Alpha Station",
-        "team": "cyberpunk"
-      },
-      "timestamp": "2024-12-05T20:35:00.123456"
-    }
-    ```
     """
     await manager.connect(websocket)
 
@@ -348,6 +337,18 @@ async def websocket_endpoint(websocket: WebSocket):
                     "team": outpost.team
                 }
                 for outpost in outposts_db.values()
+            ],
+            # ДОБАВИТЬ БРАКИ В НАЧАЛЬНОЕ СОСТОЯНИЕ
+            "marriages": [
+                {
+                    "id": marriage.id,
+                    "partner1_last_name": marriage.partner1_last_name,
+                    "partner1_first_name": marriage.partner1_first_name,
+                    "partner2_last_name": marriage.partner2_last_name,
+                    "partner2_first_name": marriage.partner2_first_name,
+                    "created_at": marriage.created_at.isoformat()
+                }
+                for marriage in marriages_db.values()
             ],
             "timestamp": datetime.now().isoformat()
         }
@@ -382,6 +383,10 @@ async def get_stats():
                             if o.team == "classic" and o.is_primary), None)
     cyberpunk_primary = next((o for o in outposts_db.values()
                               if o.team == "cyberpunk" and o.is_primary), None)
+
+    # Добавляем статистику по бракам
+    marriages_count = len(marriages_db)
+
     return {
         "total_outposts": len(outposts_db),
         "classic_holdings": classic_count,
@@ -394,7 +399,177 @@ async def get_stats():
             "id": cyberpunk_primary.id if cyberpunk_primary else None,
             "name": cyberpunk_primary.name if cyberpunk_primary else None,
         },
+        "marriages_count": marriages_count,  # НОВОЕ ПОЛЕ
         "active_connections": len(manager.active_connections),
+        "timestamp": datetime.now().isoformat()
+    }
+
+# ============================================================================
+# БРАКИ (НОВЫЙ РАЗДЕЛ)
+# ============================================================================
+
+
+@app.get("/api/marriages", response_model=List[MarriageResponse], tags=["Marriages"])
+async def get_marriages():
+    """Получить список всех браков"""
+    return list(marriages_db.values())
+
+
+@app.post("/api/marriages", response_model=MarriageResponse, tags=["Marriages"])
+async def create_marriage(
+    marriage: MarriageCreate,
+    authorization: str = Header(None)
+):
+    """
+    Создать новый брак
+
+    **Требует JWT токена в заголовке Authorization**
+    """
+    # Проверка токена
+    if not authorization:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Требуется токен",
+        )
+
+    await get_current_user(authorization)
+
+    global next_marriage_id
+
+    # Создаем новый брак
+    now = datetime.now()
+    new_marriage = Marriage(
+        id=next_marriage_id,
+        partner1_last_name=marriage.partner1_last_name,
+        partner1_first_name=marriage.partner1_first_name,
+        partner2_last_name=marriage.partner2_last_name,
+        partner2_first_name=marriage.partner2_first_name,
+        created_at=now,
+        updated_at=now
+    )
+
+    # Сохраняем в базу
+    marriages_db[next_marriage_id] = new_marriage
+    next_marriage_id += 1
+
+    # Отправляем уведомление через WebSocket
+    await manager.broadcast({
+        "type": "marriage_created",
+        "marriage": {
+            "id": new_marriage.id,
+            "partner1_last_name": new_marriage.partner1_last_name,
+            "partner1_first_name": new_marriage.partner1_first_name,
+            "partner2_last_name": new_marriage.partner2_last_name,
+            "partner2_first_name": new_marriage.partner2_first_name,
+            "created_at": new_marriage.created_at.isoformat()
+        },
+        "timestamp": datetime.now().isoformat()
+    })
+
+    return new_marriage
+
+
+@app.delete("/api/marriages/{marriage_id}", response_model=MarriageDeleteResponse, tags=["Marriages"])
+async def delete_marriage(
+    marriage_id: int,
+    authorization: str = Header(None)
+):
+    """
+    Удалить брак по ID
+
+    **Требует JWT токена в заголовке Authorization**
+    """
+    # Проверка токена
+    if not authorization:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Требуется токен",
+        )
+
+    await get_current_user(authorization)
+
+    # Проверяем существование брака
+    if marriage_id not in marriages_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Брак не найден"
+        )
+
+    # Удаляем брак
+    deleted_marriage = marriages_db.pop(marriage_id)
+
+    # Отправляем уведомление через WebSocket
+    await manager.broadcast({
+        "type": "marriage_deleted",
+        "marriage_id": marriage_id,
+        "timestamp": datetime.now().isoformat()
+    })
+
+    return {
+        "success": True,
+        "message": f"Брак #{marriage_id} удален"
+    }
+
+
+@app.get("/api/marriages/search", response_model=List[MarriageResponse], tags=["Marriages"])
+async def search_marriages(q: str = ""):
+    """
+    Поиск браков по фамилиям или именам
+
+    **Параметры:**
+    - `q`: строка поиска (ищет в фамилиях и именах обоих партнеров)
+    """
+    if not q:
+        return list(marriages_db.values())
+
+    search_term = q.lower()
+    results = []
+
+    for marriage in marriages_db.values():
+        # Ищем во всех полях
+        search_fields = [
+            marriage.partner1_last_name.lower(),
+            marriage.partner1_first_name.lower(),
+            marriage.partner2_last_name.lower(),
+            marriage.partner2_first_name.lower()
+        ]
+
+        if any(search_term in field for field in search_fields):
+            results.append(marriage)
+
+    return results
+
+
+@app.get("/api/stats/marriages", tags=["Statistics"])
+async def get_marriages_stats():
+    """Получить статистику по бракам"""
+    total_marriages = len(marriages_db)
+
+    # Считаем браки за сегодня
+    today = datetime.now().date()
+    today_marriages = sum(
+        1 for marriage in marriages_db.values()
+        if marriage.created_at.date() == today
+    )
+
+    # Самые популярные фамилии
+    last_names = []
+    for marriage in marriages_db.values():
+        last_names.extend([marriage.partner1_last_name,
+                          marriage.partner2_last_name])
+
+    from collections import Counter
+    if last_names:
+        most_common = Counter(last_names).most_common(5)
+    else:
+        most_common = []
+
+    return {
+        "total_marriages": total_marriages,
+        "today_marriages": today_marriages,
+        "most_common_last_names": [
+            {"last_name": name, "count": count} for name, count in most_common
+        ],
         "timestamp": datetime.now().isoformat()
     }
 

@@ -332,8 +332,211 @@
 
         ::-webkit-scrollbar-thumb:hover {
             background: #00ffff;
-        }
-    </style>
+		}
+		.admin-tabs {
+			display: flex;
+			gap: 10px;
+			margin-bottom: 20px;
+			border-bottom: 2px solid #00d4ff;
+			padding-bottom: 10px;
+		}
+
+		.tab-btn {
+			padding: 10px 20px;
+			background: rgba(0, 212, 255, 0.1);
+			border: 2px solid rgba(0, 212, 255, 0.3);
+			color: #00d4ff;
+			border-radius: 5px;
+			cursor: pointer;
+			font-weight: bold;
+			transition: all 0.3s;
+		}
+
+		.tab-btn:hover {
+			background: rgba(0, 212, 255, 0.2);
+			border-color: #00d4ff;
+		}
+
+		.tab-btn.active {
+			background: rgba(0, 212, 255, 0.3);
+			border-color: #00d4ff;
+			box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+		}
+
+		.tab-content {
+			display: none;
+		}
+
+		.tab-content.active {
+			display: block;
+		}
+
+		/* Стили для раздела браков */
+		.marriage-section {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 20px;
+		}
+
+		.marriage-form, .marriage-list-container {
+			padding: 20px;
+			background: rgba(0, 212, 255, 0.05);
+			border: 1px solid rgba(0, 212, 255, 0.2);
+			border-radius: 8px;
+		}
+
+		.section-title {
+			color: #a020f0;
+			font-size: 18px;
+			margin-bottom: 15px;
+			padding-bottom: 8px;
+			border-bottom: 1px solid rgba(160, 32, 240, 0.3);
+		}
+
+		.form-row {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 10px;
+			margin-bottom: 15px;
+		}
+
+		.form-group {
+			display: flex;
+			flex-direction: column;
+			gap: 5px;
+		}
+
+		.form-label {
+			color: #00aa00;
+			font-size: 12px;
+			font-family: 'Courier New', monospace;
+		}
+
+		.form-input {
+			padding: 10px;
+			background: rgba(0, 212, 255, 0.1);
+			border: 1px solid rgba(0, 212, 255, 0.3);
+			color: #00d4ff;
+			border-radius: 4px;
+			font-size: 14px;
+		}
+
+		.form-input:focus {
+			outline: none;
+			border-color: #a020f0;
+			box-shadow: 0 0 5px rgba(160, 32, 240, 0.3);
+		}
+
+		.marriage-actions {
+			display: flex;
+			gap: 10px;
+			margin-top: 20px;
+		}
+
+		.btn-submit {
+			padding: 10px 20px;
+			background: #a020f0;
+			color: white;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			font-weight: bold;
+			transition: all 0.3s;
+		}
+
+		.btn-submit:hover {
+			background: #c940ff;
+			box-shadow: 0 0 10px rgba(160, 32, 240, 0.5);
+		}
+
+		.search-box {
+			margin-bottom: 15px;
+			padding: 10px;
+			background: rgba(0, 212, 255, 0.1);
+			border: 1px solid rgba(0, 212, 255, 0.3);
+			color: #00d4ff;
+			border-radius: 4px;
+			width: 100%;
+		}
+
+		.marriage-list {
+			max-height: 400px;
+			overflow-y: auto;
+		}
+
+		.marriage-item {
+			padding: 15px;
+			margin-bottom: 10px;
+			background: rgba(160, 32, 240, 0.1);
+			border: 1px solid rgba(160, 32, 240, 0.3);
+			border-radius: 5px;
+			transition: all 0.3s;
+		}
+
+		.marriage-item:hover {
+			background: rgba(160, 32, 240, 0.15);
+			border-color: #a020f0;
+		}
+
+		.marriage-info {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 5px;
+		}
+
+		.couple-names {
+			color: #c940ff;
+			font-weight: bold;
+		}
+
+		.marriage-date {
+			color: #00aa00;
+			font-size: 11px;
+			font-family: 'Courier New', monospace;
+		}
+
+		.marriage-id {
+			color: #666;
+			font-size: 10px;
+			font-family: 'Courier New', monospace;
+		}
+
+		.btn-delete {
+			padding: 5px 10px;
+			background: #ff4444;
+			color: white;
+			border: none;
+			border-radius: 3px;
+			cursor: pointer;
+			font-size: 11px;
+			transition: all 0.3s;
+		}
+
+		.btn-delete:hover {
+			background: #ff6666;
+			box-shadow: 0 0 5px rgba(255, 68, 68, 0.5);
+		}
+
+		.no-marriages {
+			color: #666;
+			text-align: center;
+			padding: 20px;
+			font-style: italic;
+		}
+
+		.stats-marriages {
+			margin-left: 20px;
+		}
+
+		.stats-marriages .stat-label {
+			color: #a020f0;
+		}
+
+		.stats-marriages .stat-value {
+			color: #c940ff;
+		}
+		</style>
 </head>
 <body>
     <!-- Login Screen -->
@@ -350,33 +553,87 @@
     </div>
 
     <!-- Admin Panel -->
-    <div class="admin-panel" id="adminPanel">
-        <div class="admin-header">
-            <div class="admin-title">🔧 Панель управления</div>
-            <div class="admin-stats">
-                <div class="stat-item">
-                    <span class="stat-label">Статус:</span>
-                    <div class="connection-status" id="connectionStatus"></div>
-                    <span class="stat-value" id="statusText">Подключение...</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Классики:</span>
-                    <span class="stat-value" id="classicCount">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Киберы:</span>
-                    <span class="stat-value" id="cyberpunkCount">0</span>
-                </div>
-            </div>
-            <button class="logout-btn" id="logoutBtn">Выйти</button>
-        </div>
-        <div class="admin-content">
-            <div class="admin-info" id="adminInfo">
-                ⏳ Загрузка аванпостов...
-            </div>
-            <div class="outpost-list" id="outpostList"></div>
-        </div>
-    </div>
+	<div class="admin-panel" id="adminPanel">
+		<div class="admin-header">
+			<div class="admin-title">🔧 Панель управления</div>
+			<div class="admin-stats">
+				<div class="stat-item">
+					<span class="stat-label">Статус:</span>
+						<div class="connection-status" id="connectionStatus"></div>
+					<span class="stat-value" id="statusText">Подключение...</span>
+				</div>
+				<div class="stat-item">
+					<span class="stat-label">Классики:</span>
+					<span class="stat-value" id="classicCount">0</span>
+				</div>
+				<div class="stat-item">
+					<span class="stat-label">Киберы:</span>
+					<span class="stat-value" id="cyberpunkCount">0</span>
+				</div>
+				<div class="stat-item stats-marriages">
+					<span class="stat-label">Браки:</span>
+					<span class="stat-value" id="marriagesCount">0</span>
+				</div>
+			</div>
+			<button class="logout-btn" id="logoutBtn">Выйти</button>
+		</div>
+		<div class="admin-tabs">
+    		<button class="tab-btn active" data-tab="outposts">🏛️ Аванпосты</button>
+			<button class="tab-btn" data-tab="marriages">💍 Браки Киберов</button>
+		</div>
+		<div class="admin-content">
+			<div class="tab-content active" id="outpostsTab">
+				<div class="admin-info" id="adminInfo">
+					⏳ Загрузка аванпостов...
+				</div>
+				<div class="outpost-list" id="outpostList"></div>
+			</div>
+			<div class="tab-content" id="marriagesTab">
+        		<div class="marriage-section">
+            		<!-- Форма добавления брака -->
+            		<div class="marriage-form">
+                		<div class="section-title">📝 Регистрация нового брака</div>
+                		<form id="marriageForm">
+                    		<div class="form-row">
+                        		<div class="form-group">
+                            		<label class="form-label">Фамилия 1-го партнера</label>
+                            		<input type="text" class="form-input" id="partner1LastName" placeholder="Иванов" required>
+                        		</div>
+                        		<div class="form-group">
+                            		<label class="form-label">Имя 1-го партнера</label>
+                            		<input type="text" class="form-input" id="partner1FirstName" placeholder="Иван" required>
+                        		</div>
+                    		</div>
+                    
+                    		<div class="form-row">
+                        		<div class="form-group">
+                            		<label class="form-label">Фамилия 2-го партнера</label>
+                            		<input type="text" class="form-input" id="partner2LastName" placeholder="Петрова" required>
+                    		</div>
+                        		<div class="form-group">
+                            		<label class="form-label">Имя 2-го партнера</label>
+                            		<input type="text" class="form-input" id="partner2FirstName" placeholder="Мария" required>
+                        		</div>
+                    		</div>
+                    
+                    		<div class="marriage-actions">
+                        		<button type="submit" class="btn-submit" id="addMarriageBtn">💍 Зарегистрировать брак</button>
+                        		<button type="button" class="btn-submit" id="clearFormBtn" style="background: #666;">Очистить</button>
+                    		</div>
+                		</form>
+            		</div>
+            
+            		<!-- Список браков и поиск -->
+            		<div class="marriage-list-container">
+                		<div class="section-title">📋 Список зарегистрированных браков</div>
+                		<input type="text" class="search-box" id="marriageSearch" placeholder="🔍 Поиск по фамилии или имени...">
+                
+                		<div class="marriage-list" id="marriageList"></div>
+        			</div>
+        		</div>
+    		</div>
+		</div>
+	</div>
 
     <script>
         const API_BASE_URL = 'http://localhost:8000';
@@ -523,6 +780,79 @@
                     this.ws = null;
                 }
             }
+			
+			async getMarriages() {
+				try {
+					const response = await fetch(`${API_BASE_URL}/api/marriages`);
+					if (!response.ok) throw new Error('Failed to load marriages');
+					const data = await response.json();
+					this.marriages = data;
+					return data;
+				} catch (error) {
+					console.error('❌ Error loading marriages:', error);
+					throw error;
+				}
+			}
+			async addMarriage(marriageData) {
+				if (!this.token) {
+					throw new Error('Authentication required');
+				}
+
+				try {
+					const response = await fetch(`${API_BASE_URL}/api/marriages`, {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							'Authorization': `Bearer ${this.token}`
+						},
+						body: JSON.stringify(marriageData)
+					});
+
+					if (!response.ok) {
+						throw new Error(`Add marriage error: ${response.statusText}`);
+					}
+
+					return await response.json();
+				} catch (error) {
+					console.error('❌ Add marriage error:', error);
+					throw error;
+				}
+			}
+
+			async deleteMarriage(id) {
+				if (!this.token) {
+					throw new Error('Authentication required');
+				}
+
+				try {
+					const response = await fetch(`${API_BASE_URL}/api/marriages/${id}`, {
+						method: 'DELETE',
+						headers: {
+							'Authorization': `Bearer ${this.token}`
+						}
+					});
+
+					if (!response.ok) {
+						throw new Error(`Delete marriage error: ${response.statusText}`);
+					}
+
+					return await response.json();
+				} catch (error) {
+					console.error('❌ Delete marriage error:', error);
+					throw error;
+				}
+			}
+
+			async searchMarriages(query) {
+				try {
+					const response = await fetch(`${API_BASE_URL}/api/marriages/search?q=${encodeURIComponent(query)}`);
+					if (!response.ok) throw new Error('Search failed');
+					return await response.json();
+				} catch (error) {
+					console.error('❌ Search error:', error);
+					throw error;
+				}
+			}
         }
 
         const api = new OutpostAPI();
@@ -589,7 +919,7 @@
 
                 item.innerHTML = `
                     <div class="outpost-name">${outpost.name}</div>
-                    <div class="outpost-id">ID: ${outpost.id} • Команда: ${outpost.team.toUpperCase()}</div>
+                    <div class="outpost-id">ID: ${outpost.id} • Team: ${outpost.team.toUpperCase()}</div>
                     <div class="outpost-controls">
                         <button class="btn-team classic ${classicActive}" 
                             onclick="changeTeam(${outpost.id}, 'classic')">🏛️ Классики</button>
@@ -652,6 +982,7 @@
                 showLoginError(error.message || 'Ошибка подключения');
                 btn.disabled = false;
             }
+			await loadMarriages();
         });
 
         document.getElementById('logoutBtn').addEventListener('click', function() {
@@ -672,6 +1003,143 @@
                 document.getElementById('loginBtn').click();
             }
         });
+		let allMarriages = [];
+
+		/* Новые функции для работы с браками */
+		function updateMarriagesStats() {
+			const marriagesCount = allMarriages.length;
+			document.getElementById('marriagesCount').textContent = marriagesCount;
+		}
+
+		function renderMarriagesList(marriages = allMarriages) {
+			const list = document.getElementById('marriageList');
+
+			if (marriages.length === 0) {
+				list.innerHTML = '<div class="no-marriages">Нет зарегистрированных браков</div>';
+				updateMarriagesStats();
+				return;
+			}
+
+			list.innerHTML = marriages.map(marriage => {
+				const date = new Date(marriage.created_at).toLocaleDateString('ru-RU');
+				return `
+<div class="marriage-item" data-id="${marriage.id}">
+<div class="marriage-info">
+<div class="couple-names">
+${marriage.partner1_last_name} ${marriage.partner1_first_name} 💞 
+${marriage.partner2_last_name} ${marriage.partner2_first_name}
+</div>
+<button class="btn-delete" onclick="deleteMarriage(${marriage.id})">Удалить</button>
+</div>
+<div class="marriage-date">Зарегистрирован: ${date}</div>
+<div class="marriage-id">ID: ${marriage.id}</div>
+</div>
+`;
+			}).join('');
+
+			updateMarriagesStats();
+		}
+
+		async function loadMarriages() {
+			try {
+				allMarriages = await api.getMarriages();
+				renderMarriagesList();
+			} catch (error) {
+				console.error('Error loading marriages:', error);
+			}
+		}
+
+		async function addNewMarriage() {
+			const partner1LastName = document.getElementById('partner1LastName').value.trim();
+			const partner1FirstName = document.getElementById('partner1FirstName').value.trim();
+			const partner2LastName = document.getElementById('partner2LastName').value.trim();
+			const partner2FirstName = document.getElementById('partner2FirstName').value.trim();
+
+			if (!partner1LastName || !partner1FirstName || !partner2LastName || !partner2FirstName) {
+				alert('Пожалуйста, заполните все поля');
+				return;
+			}
+
+			const btn = document.getElementById('addMarriageBtn');
+			btn.disabled = true;
+			btn.textContent = 'Регистрация...';
+
+			try {
+				await api.addMarriage({
+					partner1_last_name: partner1LastName,
+					partner1_first_name: partner1FirstName,
+					partner2_last_name: partner2LastName,
+					partner2_first_name: partner2FirstName
+				});
+
+				await loadMarriages();
+
+				document.getElementById('marriageForm').reset();
+
+				alert('✅ Брак успешно зарегистрирован!');
+			} catch (error) {
+				alert('Ошибка: ' + error.message);
+			} finally {
+				btn.disabled = false;
+				btn.textContent = '💍 Зарегистрировать брак';
+			}
+		}
+
+		async function deleteMarriage(id) {
+			if (!confirm('Вы уверены, что хотите удалить этот брак?')) {
+				return;
+			}
+
+			try {
+				await api.deleteMarriage(id);
+				allMarriages = allMarriages.filter(m => m.id !== id);
+				renderMarriagesList();
+			} catch (error) {
+				alert('Ошибка удаления: ' + error.message);
+			}
+		}
+
+		async function searchMarriages(query) {
+			if (!query.trim()) {
+				renderMarriagesList(allMarriages);
+				return;
+			}
+
+			try {
+				const results = await api.searchMarriages(query);
+				renderMarriagesList(results);
+			} catch (error) {
+				console.error('Search error:', error);
+				renderMarriagesList(allMarriages);
+			}
+		}
+		/* Новые обработчики событий для системы браков */
+		document.getElementById('marriageForm').addEventListener('submit', async function(e) {
+			e.preventDefault();
+			await addNewMarriage();
+		});
+
+		document.getElementById('clearFormBtn').addEventListener('click', function() {
+			document.getElementById('marriageForm').reset();
+		});
+
+		document.getElementById('marriageSearch').addEventListener('input', function(e) {
+			searchMarriages(e.target.value);
+		});
+
+		// Обработчики для переключения табов
+		document.querySelectorAll('.tab-btn').forEach(btn => {
+			btn.addEventListener('click', function() {
+				const tabId = this.dataset.tab;
+
+				document.querySelectorAll('.tab-btn, .tab-content').forEach(el => {
+					el.classList.remove('active');
+				});
+
+				this.classList.add('active');
+				document.getElementById(`${tabId}Tab`).classList.add('active');
+			});
+		});
     </script>
 </body>
 </html>

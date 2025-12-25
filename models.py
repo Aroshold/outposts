@@ -4,6 +4,8 @@
 
 from pydantic import BaseModel
 from typing import Literal
+from datetime import datetime
+
 
 class Outpost(BaseModel):
     """Модель аванпоста"""
@@ -11,7 +13,7 @@ class Outpost(BaseModel):
     name: str
     team: Literal["classic", "cyberpunk"]
     is_primary: bool = False  # Новое поле для главного аванпоста
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -21,3 +23,13 @@ class Outpost(BaseModel):
                 "is_primary": False
             }
         }
+
+
+class Marriage(BaseModel):
+    id: int
+    partner1_last_name: str
+    partner1_first_name: str
+    partner2_last_name: str
+    partner2_first_name: str
+    created_at: datetime
+    updated_at: datetime
